@@ -27,8 +27,9 @@ namespace PptxToMd.Formats
         /// Slide ends with 3 newlines ("\n\n\n").
         /// </summary>
         /// <param name="data">The slide.</param>
+        /// <param name="resourcePath">Specifies where any resources external to the slide should be referenced from (example: images)</param>
         /// <returns>A markdown formatted string of the slide.</returns>
-        public string Convert(Slide data)
+        public string Convert(Slide data, string resourcePath)
         {
             StringBuilder output = new StringBuilder();
 
@@ -42,28 +43,30 @@ namespace PptxToMd.Formats
                 output.Append($"## {title}\n");
             }
 
-            output.Append("\n");
-
+            if (data.Bullets.Count > 0)
+            {
+                output.Append("\n");
+            }
             foreach (var bullet in data.Bullets)
             {
-                output.Append($"*{new string(' ', bullet.Level * 2)} {bullet.Text}\n");
+                output.Append($"{new string(' ', bullet.Level * 2)}* {bullet.Text}\n");
             }
 
-            output.Append("\n");
-
+            if (data.Images.Count > 0)
+            {
+                output.Append("\n");
+            }
             for (int i = 0; i < data.Images.Count; i++)
             {
-                output.Append($"![Image](./{data.ID.ToString()}-img{i + 1}.jpg)\n");
+                output.Append($"![Image]({resourcePath}/{data.ID.ToString()}-img{i + 1}.jpg)\n");
             }
-
-            output.Append("\n");
 
             if (!String.IsNullOrWhiteSpace(data.Notes))
             {
-                output.Append($"Notes: {data.Notes}\n");
                 output.Append("\n");
+                output.Append($"Notes: {data.Notes}\n");
             }
-            output.Append("\n\n");
+            output.Append("\n\n\n");
 
             return output.ToString();
         }

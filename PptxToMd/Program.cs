@@ -139,13 +139,15 @@ namespace PptxToMd
                                     output.Substring(0, output.LastIndexOf(Path.DirectorySeparatorChar)) :
                                     output;
                 Directory.CreateDirectory(outputDirectory);
+                var imgOutputDirectory = outputDirectory + Path.DirectorySeparatorChar + "img";
+                Directory.CreateDirectory(imgOutputDirectory);
 
                 // Dump the image files
                 foreach (var slide in parsedSlides)
                 {
                     for (int i = 0; i < slide.Images.Count; i++)
                     {
-                        string fileName = outputDirectory +
+                        string fileName = imgOutputDirectory +
                                         Path.DirectorySeparatorChar +
                                         $"{slide.ID.ToString()}-img{i + 1}.jpg";
                         slide.Images[i].Data.Save(fileName);
@@ -153,11 +155,15 @@ namespace PptxToMd
                 }
             }
 
+            var lastDir = outputDirectory != null ?
+                "/" + outputDirectory.Substring(outputDirectory.LastIndexOf(Path.DirectorySeparatorChar) + 1) :
+                String.Empty;
+            var imgPath = $".{lastDir}/img";
             // One long dump of markdown, put it all in a StringBuilder and vomit
             if (consoleOut || singleFileOutput)
             {
                 var markdownString = new StringBuilder();
-                parsedSlides.ForEach(slide => markdownString.Append(formatter.Convert(slide)));
+                parsedSlides.ForEach(slide => markdownString.Append(formatter.Convert(slide, imgPath)));
 
                 if (consoleOut)
                 {
@@ -176,7 +182,7 @@ namespace PptxToMd
                 // Dump each slide individually
                 for (int i = 0; i < parsedSlides.Count; i++)
                 {
-                    File.WriteAllText(output + Path.DirectorySeparatorChar + $"slide{i + 1}.MD", formatter.Convert(parsedSlides[i]));
+                    File.WriteAllText(output + Path.DirectorySeparatorChar + $"slide{i + 1}.MD", formatter.Convert(parsedSlides[i], imgPath));
                 }
             }
         }
